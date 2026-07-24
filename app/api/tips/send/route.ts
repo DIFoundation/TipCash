@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (recipient) {
-      finalRecipientAddress = recipient.zcashAddress;
+      finalRecipientAddress = recipient.zcash_address;
     } else if (!finalRecipientAddress) {
       return NextResponse.json(
         { error: 'Could not resolve recipient' },
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     // Send transaction
     const txid = await sendTransaction({
-      from: sender.zcashAddress,
+      from: sender.zcash_address,
       to: finalRecipientAddress,
       amount,
       memo: isAnonymous ? 'Anonymous tip' : memo,
@@ -76,16 +76,16 @@ export async function POST(request: NextRequest) {
     // Create tip record
     const tip = await db.tips.create({
       id: uuidv4(),
-      senderId: payload.userId,
-      recipientId: recipient?.id,
-      recipientAddress: finalRecipientAddress,
+      sender_id: payload.userId,
+      recipient_id: recipient?.id,
+      recipient_address: finalRecipientAddress,
       amount,
       currency: 'ZEC',
       txid,
       status: 'pending',
       memo: isAnonymous ? 'Anonymous tip' : memo,
-      isAnonymous,
-      createdAt: new Date(),
+      is_anonymous: isAnonymous,
+      created_at: new Date(),
     });
 
     return NextResponse.json(

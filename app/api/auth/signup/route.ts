@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
       id: userId,
       email,
       username,
-      passwordHash,
-      displayName,
-      zcashAddress,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      password_hash: passwordHash,
+      display_name: displayName,
+      zcash_address: zcashAddress,
+      created_at: new Date(),
+      updated_at: new Date(),
     });
 
     // Generate tokens
@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
           id: user.id,
           email: user.email,
           username: user.username,
-          displayName: user.displayName,
-          zcashAddress: user.zcashAddress,
+          display_name: user.display_name,
+          zcash_address: user.zcash_address,
         },
         accessToken,
       },

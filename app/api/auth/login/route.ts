@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const passwordValid = await verifyPassword(password, user.passwordHash);
+    const passwordValid = await verifyPassword(password, user.password_hash);
     if (!passwordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
           id: user.id,
           email: user.email,
           username: user.username,
-          displayName: user.displayName,
-          zcashAddress: user.zcashAddress,
+          display_name: user.display_name,
+          zcash_address: user.zcash_address,
         },
         accessToken,
       },

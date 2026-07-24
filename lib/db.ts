@@ -4,45 +4,45 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  passwordHash: string;
-  displayName: string;
+  password_hash: string;
+  display_name: string;
   bio?: string;
-  avatarUrl?: string;
-  zcashAddress: string;
-  publicKey?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  avatar_url?: string;
+  zcash_address: string;
+  public_key?: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Tip {
   id: string;
-  senderId: string;
-  recipientId?: string;
-  recipientAddress?: string;
+  sender_id: string;
+  recipient_id?: string;
+  recipient_address?: string;
   amount: number;
   currency: 'ZEC' | 'USD';
   txid?: string;
   status: 'pending' | 'confirmed' | 'failed';
   memo?: string;
-  isAnonymous: boolean;
-  createdAt: Date;
+  is_anonymous: boolean;
+  created_at: Date;
 }
 
 export interface Favorite {
   id: string;
-  userId: string;
-  favoriteUserId: string;
-  createdAt: Date;
+  user_id: string;
+  favorite_user_id: string;
+  created_at: Date;
 }
 
 export interface ReceiveLink {
   id: string;
-  userId: string;
+  user_id: string;
   token: string;
-  isAnonymous: boolean;
-  usesRemaining: number;
-  expiresAt?: Date;
-  createdAt: Date;
+  is_anonymous: boolean;
+  uses_remaining: number;
+  expires_at?: Date;
+  created_at: Date;
 }
 
 const supabase = createClient(
@@ -140,20 +140,20 @@ export const db = {
       if (error) return null;
       return data;
     },
-    findBySenderId: async (senderId: string, limit: number = 50): Promise<Tip[]> => {
+    findBySenderId: async (sender_id: string, limit: number = 50): Promise<Tip[]> => {
       const { data, error } = await supabase
         .from('tips')
         .select()
-        .eq('sender_id', senderId)
+        .eq('sender_id', sender_id)
         .limit(limit);
       if (error) throw error;
       return data;
     },
-    findByRecipientId: async (recipientId: string, limit: number = 50): Promise<Tip[]> => {
+    findByRecipientId: async (recipient_id: string, limit: number = 50): Promise<Tip[]> => {
       const { data, error } = await supabase
         .from('tips')
         .select()
-        .eq('recipient_id', recipientId)
+        .eq('recipient_id', recipient_id)
         .limit(limit);
       if (error) throw error;
       return data;
@@ -172,29 +172,29 @@ export const db = {
 
   // Favorite operations
   favorites: {
-    create: async (userId: string, favoriteUserId: string): Promise<Favorite> => {
+    create: async (user_id: string, favorite_user_id: string): Promise<Favorite> => {
       const { data: favorite, error } = await supabase
         .from('favorites')
-        .insert([{ user_id: userId, favorite_user_id: favoriteUserId }])
+        .insert([{ user_id, favorite_user_id }])
         .select()
         .single();
       if (error) throw error;
       return favorite;
     },
-    delete: async (userId: string, favoriteUserId: string): Promise<boolean> => {
+    delete: async (user_id: string, favorite_user_id: string): Promise<boolean> => {
       const { error } = await supabase
         .from('favorites')
         .delete()
-        .eq('user_id', userId)
-        .eq('favorite_user_id', favoriteUserId);
+        .eq('user_id', user_id)
+        .eq('favorite_user_id', favorite_user_id);
       if (error) throw error;
       return true;
     },
-    findByUserId: async (userId: string): Promise<Favorite[]> => {
+    findByUserId: async (user_id: string): Promise<Favorite[]> => {
       const { data, error } = await supabase
         .from('favorites')
         .select()
-        .eq('user_id', userId);
+        .eq('user_id', user_id);
       if (error) throw error;
       return data;
     }
@@ -220,11 +220,11 @@ export const db = {
       if (error) return null;
       return data;
     },
-    findByUserId: async (userId: string): Promise<ReceiveLink[]> => {
+    findByUserId: async (user_id: string): Promise<ReceiveLink[]> => {
       const { data, error } = await supabase
         .from('receive_links')
         .select()
-        .eq('user_id', userId);
+        .eq('user_id', user_id);
       if (error) throw error;
       return data;
     },

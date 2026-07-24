@@ -129,7 +129,7 @@ export default function SettingsPage() {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your Name"
+                    placeholder={user?.displayName || ''}
                     disabled={loading}
                   />
                 </div>
@@ -167,13 +167,13 @@ export default function SettingsPage() {
                 <div>
                   <p className="text-muted-foreground">Zcash Address</p>
                   <p className="text-foreground font-mono break-all mt-1">
-                    {user?.zcashAddress}
+                    {user?.zcash_address || 'Not set'}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Account Created</p>
                   <p className="text-foreground mt-1">
-                    {user && new Date(user.id).toLocaleDateString()}
+                    {(user?.created_at as Date)?.toLocaleDateString() || 'Unknown'}
                   </p>
                 </div>
               </div>

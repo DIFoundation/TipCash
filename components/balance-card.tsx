@@ -45,7 +45,7 @@ export function BalanceCard() {
             <div className="h-12 w-32 rounded bg-muted animate-pulse" />
           ) : (
             <p className="text-4xl font-bold text-foreground">
-              {balance !== null ? balance.toFixed(8) : '0'} ZEC
+              {balance !== null ? balance : '0'} ZEC
             </p>
           )}
           {error && <p className="text-xs text-red-600">{error}</p>}

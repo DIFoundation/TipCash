@@ -9,7 +9,8 @@ export interface User {
   displayName: string;
   bio?: string;
   avatarUrl?: string;
-  zcashAddress: string;
+  zcash_address: string;
+  created_at: Date;
 }
 
 interface AuthContextType {
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAccessToken(null);
       }
     } catch (error) {
-      console.error('[v0] Error fetching profile:', error);
+      console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
     }
