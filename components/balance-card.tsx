@@ -37,7 +37,7 @@ export function BalanceCard() {
   }, [accessToken]);
 
   return (
-    <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 p-8">
+    <Card className="bg-linear-to-br from-primary/10 to-primary/5 border-primary/20 p-8">
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">Total Balance</p>
         <div className="space-y-1">

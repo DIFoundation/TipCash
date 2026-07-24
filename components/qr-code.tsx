@@ -1,6 +1,6 @@
 'use client';
 
-import QRCode from 'qrcode.react';
+import { QRCodeCanvas as QRCode } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useRef } from 'react';
@@ -47,8 +47,8 @@ export function QRCodeDisplay({
           value={value}
           size={size}
           level={level}
-          includeMargin={includeMargin}
-          renderAs="canvas"
+          marginSize={includeMargin ? 4 : 0}
+          
         />
       </div>
       
