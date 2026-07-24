@@ -112,49 +112,16 @@ export interface TransactionDetail {
   memo?: string;
 }
 
-export async function getTransaction(txid: string): Promise<TransactionDetail> {
-  try {
-    const tx = await callRpc<any>('gettransaction', [txid]);
-    return {
-      txid: tx.txid,
-      time: tx.time,
-      amount: tx.amount,
-      address: tx.address || '',
-      category: tx.category,
-      confirmations: tx.confirmations || 0,
-      memo: tx.memo,
-    };
-  } catch (error) {
-    console.error('Error getting transaction:', error);
-    throw error;
-  }
+export async function getTransaction(txid: string) {
+  return callRpc("gettransaction", [txid]);
 }
 
 // List recent transactions
-export async function listTransactions(count: number = 50): Promise<TransactionDetail[]> {
-  try {
-    const txs = await callRpc<any[]>('listtransactions', ['*', count, 0, true]);
-    return txs.map((tx) => ({
-      txid: tx.txid,
-      time: tx.time,
-      amount: tx.amount,
-      address: tx.address || '',
-      category: tx.category,
-      confirmations: tx.confirmations || 0,
-      memo: tx.memo,
-    }));
-  } catch (error) {
-    console.error('Error listing transactions:', error);
-    // Return mock transactions for demo
-    return Array.from({ length: 5 }, (_, i) => ({
-      txid: `mock_${i}`,
-      time: Date.now() - i * 3600000,
-      amount: (Math.random() * 5).toFixed(8) as any,
-      address: 'zaddr_mock',
-      category: Math.random() > 0.5 ? 'send' : 'receive',
-      confirmations: Math.floor(Math.random() * 10),
-    }));
-  }
+export async function listTransactions() {
+  return callRpc<TransactionDetail[]>(
+    "listtransactions",
+    ["*", 50]
+  );
 }
 
 // Validate Zcash address
@@ -175,37 +142,29 @@ export async function validateAddress(address: string) {
 let defaultAccountId: number | null = null;
 
 // Get a new address for receiving
-export async function getNewAddress(): Promise<string> {
-  try {
-    // For Zallet, use z_getnewaccount + z_getaddressforaccount
-    if (defaultAccountId === null) {
-      const account = await callRpc<{ account: number }>('z_getnewaccount', []);
-      defaultAccountId = account.account;
-    }
-    
-    const addressResult = await callRpc<{ address: string }>(
-      'z_getaddressforaccount',
-      [defaultAccountId, [], 0]
+let defaultAccount: number | null = null;
+
+export async function getNewAddress() {
+  if (defaultAccount === null) {
+    const account = await callRpc<{ account: number }>(
+      "z_getnewaccount",
+      []
     );
-    
-    return addressResult.address;
-  } catch (error) {
-    console.error('Error getting new address:', error);
-    // Return mock address for demo
-    return `z_${Math.random().toString(36).substring(2, 35)}`;
+
+    defaultAccount = account.account;
   }
+
+  const address = await callRpc<{ address: string }>(
+    "z_getaddressforaccount",
+    [defaultAccount, [], 0]
+  );
+
+  return address.address;
 }
 
 // Get list of addresses owned by wallet
-export async function listAddresses(): Promise<string[]> {
-  try {
-    // For Zallet, use listaddresses
-    const addresses = await callRpc<string[]>('listaddresses', []);
-    return addresses;
-  } catch (error) {
-    console.error('Error listing addresses:', error);
-    return [];
-  }
+export async function listAddresses() {
+  return callRpc<string[]>("listaddresses", []);
 }
 
 // Get price conversion (mock)
@@ -232,4 +191,16 @@ export async function convertZecToUsd(zecAmount: number): Promise<number> {
 export async function convertUsdToZec(usdAmount: number): Promise<number> {
   const price = await getZecPrice();
   return usdAmount / price;
+}
+
+export async function getBlockchainInfo() {
+  return callRpc("getblockchaininfo");
+}
+
+export async function getBlockCount() {
+  return callRpc<number>("getblockcount");
+}
+
+export async function getBestBlockHash() {
+  return callRpc<string>("getbestblockhash");
 }
