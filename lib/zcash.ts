@@ -1,16 +1,37 @@
 interface RpcResponse<T> {
-  result: T | null;
+  result: T;
   error: { code: number; message: string } | null;
-  id: string;
+  id: number | string;
 }
 
-async function callRpc<T>(method: string, params: unknown[] = []): Promise<T> {
-  const response = await fetch(process.env.ZCASH_RPC_URL!, {
+export async function callRpc<T>(
+  method: string,
+  params: unknown[] = []
+): Promise<T> {
+  const provider = process.env.ZCASH_PROVIDER ?? "zallet";
+
+  let url: string;
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (provider === "tatum") {
+    url = process.env.TATUM_RPC_URL!;
+
+    headers["x-api-key"] = process.env.TATUM_API_KEY!;
+  } else {
+    url = process.env.ZCASH_RPC_URL!;
+
+    headers["Authorization"] =
+      "Basic " +
+      Buffer.from(
+        `${process.env.ZCASH_RPC_USER}:${process.env.ZCASH_RPC_PASSWORD}`
+      ).toString("base64");
+  }
+
+  const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.ZCASH_API_KEY!,
-    },
+    headers,
     body: JSON.stringify({
       jsonrpc: "2.0",
       id: 1,
@@ -19,7 +40,11 @@ async function callRpc<T>(method: string, params: unknown[] = []): Promise<T> {
     }),
   });
 
-  const json = await response.json();
+  if (!response.ok) {
+    throw new Error(`RPC ${response.status}`);
+  }
+
+  const json: RpcResponse<T> = await response.json();
 
   if (json.error) {
     throw new Error(json.error.message);
@@ -173,17 +198,8 @@ export interface AddressValidation {
   type?: string;
 }
 
-export async function validateAddress(address: string): Promise<AddressValidation> {
-  try {
-    const result = await callRpc<AddressValidation>('validateaddress', [address]);
-    return result;
-  } catch (error) {
-    console.error('Error validating address:', error);
-    // Return mock validation for demo
-    return {
-      isvalid: address.startsWith('z') || address.startsWith('t'),
-    };
-  }
+export async function validateAddress(address: string) {
+  return callRpc<AddressValidation>("validateaddress", [address]);
 }
 
 // GetAccount ID for default account
