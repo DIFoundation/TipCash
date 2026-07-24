@@ -138,9 +138,6 @@ export async function validateAddress(address: string) {
   return callRpc<AddressValidation>("validateaddress", [address]);
 }
 
-// GetAccount ID for default account
-let defaultAccountId: number | null = null;
-
 // Get a new address for receiving
 let defaultAccount: number | null = null;
 
@@ -171,10 +168,12 @@ export async function listAddresses() {
 export async function getZecPrice(): Promise<number> {
   try {
     const response = await fetch(
-      'https://api.coindesk.com/v1/bpi/currentprice/ZEC.json'
-    );
-    const data = (await response.json()) as any;
-    return data.bpi.USD.rate_float;
+  "https://api.coingecko.com/api/v3/simple/price?ids=zcash&vs_currencies=usd"
+);
+
+const data = await response.json();
+
+return data.zcash.usd;
   } catch (error) {
     console.error('Error fetching ZEC price:', error);
     // Return mock price
