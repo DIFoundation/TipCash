@@ -60,38 +60,19 @@ export interface ZcashBalance {
 }
 
 // Get balance for a Zcash address
-export async function getBalance(address: string): Promise<number> {
-  try {
-    // For Zallet, use getbalance which works with unified addresses
-    const balance = await callRpc<number>('getbalance', ["*", 0]);
-    return balance;
-  } catch (error) {
-    console.error(`Error getting balance for ${address}:`, error);
-    // Return mock balance for demo purposes
-    return Math.random() * 10;
-  }
+export async function getBalance() {
+  return callRpc<number>("getbalance", ["*", 0]);
 }
 
 // Get wallet balance (all addresses)
 export async function getWalletBalance(): Promise<ZcashBalance> {
-  try {
-    // For Zallet, use getbalance for total balance
-    const total = await callRpc<number>('getbalance', ['*', 0]);
-    
-    return {
-      transparent: total, // Zallet uses unified addresses
-      private: 0, // Unified addresses combine both
-      total,
-    };
-  } catch (error) {
-    console.error('Error getting wallet balance:', error);
-    // Return mock balance for demo
-    return {
-      transparent: 5 + Math.random() * 2,
-      private: 2 + Math.random() * 1,
-      total: 7 + Math.random() * 3,
-    };
-  }
+  const total = await getBalance();
+
+  return {
+    transparent: total,
+    private: 0,
+    total,
+  };
 }
 
 // Send ZEC transaction
@@ -102,34 +83,22 @@ export interface SendParams {
   memo?: string;
 }
 
-export async function sendTransaction(params: SendParams): Promise<string> {
-  try {
-    // Validate addresses
-    const fromValid = await validateAddress(params.from);
-    const toValid = await validateAddress(params.to);
+export async function sendTransaction(params: SendParams) {
+  const outputs = [
+    {
+      address: params.to,
+      amount: params.amount,
+      memo: params.memo
+        ? Buffer.from(params.memo).toString("base64")
+        : "",
+    },
+  ];
 
-    if (!fromValid.isvalid || !toValid.isvalid) {
-      throw new Error('Invalid sender or recipient address');
-    }
-
-    // Build transaction
-    const operations = [
-      {
-        pool: 'default',
-        address: params.to,
-        amount: params.amount,
-        memo: params.memo ? Buffer.from(params.memo).toString('base64') : '',
-      },
-    ];
-
-    // Send transaction using z_sendmany
-    const txid = await callRpc<string>('z_sendmany', [params.from, operations, 1]);
-    return txid;
-  } catch (error) {
-    console.error('Error sending transaction:', error);
-    // Return mock txid for demo
-    return 'mock_' + Math.random().toString(36).substring(7);
-  }
+  return callRpc<string>("z_sendmany", [
+    params.from,
+    outputs,
+    1,
+  ]);
 }
 
 // Get transaction details
