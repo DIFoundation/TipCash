@@ -1,11 +1,3 @@
-// Zcash RPC integration
-const ZCASH_RPC_URL = process.env.ZCASH_RPC_URL || 'http://localhost:18232';
-const ZCASH_RPC_USER = process.env.ZCASH_RPC_USER || 'user';
-const ZCASH_RPC_PASSWORD = process.env.ZCASH_RPC_PASSWORD || 'password';
-
-// Enable mock mode for development when no wallet is available
-const USE_MOCK_MODE = process.env.USE_MOCK_ZCASH === 'true';
-
 interface RpcResponse<T> {
   result: T | null;
   error: { code: number; message: string } | null;
@@ -13,43 +5,27 @@ interface RpcResponse<T> {
 }
 
 async function callRpc<T>(method: string, params: unknown[] = []): Promise<T> {
-  // If in mock mode, throw error to trigger fallback
-  if (USE_MOCK_MODE) {
-    throw new Error('Mock mode enabled - RPC call skipped');
+  const response = await fetch(process.env.ZCASH_RPC_URL!, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.ZCASH_API_KEY!,
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method,
+      params,
+    }),
+  });
+
+  const json = await response.json();
+
+  if (json.error) {
+    throw new Error(json.error.message);
   }
 
-  const auth = Buffer.from(`${ZCASH_RPC_USER}:${ZCASH_RPC_PASSWORD}`).toString('base64');
-
-  try {
-    const response = await fetch(ZCASH_RPC_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${auth}`,
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method,
-        params,
-        id: Math.random().toString(),
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`RPC call failed with status ${response.status}`);
-    }
-
-    const data = (await response.json()) as RpcResponse<T>;
-
-    if (data.error) {
-      throw new Error(`Zcash RPC error: ${data.error.message}`);
-    }
-
-    return data.result as T;
-  } catch (error) {
-    console.error(`Zcash RPC error (${method}):`, error);
-    throw error;
-  }
+  return json.result;
 }
 
 export interface ZcashBalance {
