@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractToken, verifyAccessToken } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { sendTransaction, validateAddress } from '@/lib/zcash';
+import { 
+  sendTransaction, 
+  // validateAddress 
+} from '@/lib/zcash';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -42,33 +45,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { toAddress, amount, memo } = validationResult.data;
-
-    // Get sender user
-    const sender = await db.users.findById(payload.userId);
-    if (!sender) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
+    const { toAddress, amount } = validationResult.data;
 
     // Validate recipient address
-    const recipientValid = await validateAddress(sender.id, toAddress);
-    if (!recipientValid.isvalid) {
-      return NextResponse.json(
-        { error: 'Invalid recipient address' },
-        { status: 400 }
-      );
-    }
+    // const recipientValid = await validateAddress(payload.userId, toAddress);
+    // if (!recipientValid.isvalid) {
+    //   return NextResponse.json(
+    //     { error: 'Invalid recipient address' },
+    //     { status: 400 }
+    //   );
+    // }
 
-    // Send transaction
-    const txid = await sendTransaction({
-      from: sender.zcash_address,
-      to: toAddress,
+    // Send transaction (use userId, not address)
+    const txid = await sendTransaction(
+      payload.userId,
+      toAddress,
       amount,
-      memo,
-    });
+    );
 
     // Create tip record
     const tip = await db.tips.create({
@@ -79,7 +72,6 @@ export async function POST(request: NextRequest) {
       currency: 'ZEC',
       txid,
       status: 'pending',
-      memo,
       is_anonymous: false,
       created_at: new Date(),
     });
@@ -90,7 +82,6 @@ export async function POST(request: NextRequest) {
       amount,
       address: toAddress,
       status: 'pending',
-      memo,
     });
   } catch (error) {
     console.error('[v0] Send transaction error:', error);

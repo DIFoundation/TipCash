@@ -13,6 +13,12 @@ export function QuickActions() {
           Send Tip
         </Button>
       </Link>
+      <Link href="/send-zec">
+        <Button variant="outline" className="w-full" size="lg">
+          <Send className="mr-2 h-4 w-4" />
+          Send ZEC
+        </Button>
+      </Link>
       <Link href="/receive">
         <Button variant="outline" className="w-full" size="lg">
           <ArrowDownLeft className="mr-2 h-4 w-4" />

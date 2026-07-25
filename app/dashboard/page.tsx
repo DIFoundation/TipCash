@@ -5,6 +5,7 @@ import { DashboardHeader } from '@/components/dashboard-header';
 import { BalanceCard } from '@/components/balance-card';
 import { QuickActions } from '@/components/quick-actions';
 import { RecentTransactions } from '@/components/recent-transactions';
+import { ExplorerTransactions } from '@/components/explorer-transactions';
 
 export default function DashboardPage() {
   return (
@@ -19,8 +20,11 @@ export default function DashboardPage() {
             {/* Quick Actions */}
             <QuickActions />
 
+            {/* Blockchain Transactions */}
+            <ExplorerTransactions />
+
             {/* Recent Transactions */}
-            <RecentTransactions />
+            {/* <RecentTransactions /> */}
           </div>
         </main>
       </div>

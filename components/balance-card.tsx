@@ -5,8 +5,6 @@ import { useAuth } from '@/lib/auth-context';
 import { Card } from '@/components/ui/card';
 
 interface BalanceResponse {
-  transparent: number;
-  private: number;
   total: number;
 }
 
@@ -22,18 +20,21 @@ export function BalanceCard() {
     const fetchBalance = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/zcash/balance', {
+        const response = await fetch('/api/zcash/explorer/balance', {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
         if (!response.ok) throw new Error('Failed to fetch balance');
 
         const data = await response.json();
-        setBalance(data);
+        // Explorer API returns total balance, we'll format it for display
+        setBalance({
+          total: data.balance 
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error fetching balance');
         // Set mock balance for demo
-        setBalance({ transparent: 0, private: 0, total: 0 });
+        setBalance({ total: 0 });
       } finally {
         setLoading(false);
       }
@@ -51,17 +52,17 @@ export function BalanceCard() {
             <div className="h-12 w-32 rounded bg-muted animate-pulse" />
           ) : (
             <div className="text-4xl font-bold text-foreground">
-              <p className='text-2xl font mono'>
+              {/* <p className='text-2xl font mono'>
               <span className="text-primary">Transparent:</span>{" "}
               {balance?.transparent && balance?.transparent > 0 ? balance?.transparent : '0'} ZEC
               </p>
               <p className='text-2xl font-mono'>
               <span className="text-primary">Private:</span>{" "}
               {balance?.private && balance?.private > 0 ? balance?.private : '0'} ZEC
-              </p>
+              </p> */}
               <p className=''>
               <span className="text-primary">Total:</span>{" "}
-              {balance?.total && balance?.total > 0 ? balance?.total : '0'} ZEC
+              {balance?.total && balance?.total > 0 ? balance?.total : '0'} TAZ
               </p>
             </div>
           )}

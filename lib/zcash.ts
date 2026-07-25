@@ -40,24 +40,11 @@ export async function getBalance(userId: string): Promise<ZcashBalance> {
   };
 }
 
-// Send ZEC transaction
-export interface SendParams {
-  from: string;
-  to: string;
-  amount: number;
-  memo?: string;
-}
-
-export async function sendTransaction(params: SendParams) {
-  const outputs = [
-    {
-      address: params.to,
-      amount: params.amount,
-      memo: params.memo ? Buffer.from(params.memo).toString("base64") : "",
-    },
-  ];
-
-  return runZingo(params.from, ["z_sendmany", JSON.stringify(outputs), "1"]);
+// Legacy single-step send (for backward compatibility)
+export async function sendTransaction(userId: string, to: string, amount: number) {
+  await runZingo(userId, ["rescan"]);
+  const quickSend = await runZingo(userId, ["quicksend", to, amount.toString()]);
+  return quickSend;
 }
 
 // Get transaction details
@@ -92,10 +79,10 @@ export interface AddressValidation {
   type?: string;
 }
 
-export async function validateAddress(userId: string, address: string): Promise<AddressValidation> {
-  const output = await runZingo(userId, ["validateaddress", address]);
-  return JSON.parse(output as string);
-}
+// export async function validateAddress(userId: string, address: string): Promise<AddressValidation> {
+//   const output = await runZingo(userId, ["validateaddress", address]);
+//   return JSON.parse(output as string);
+// }
 
 // Get a new address for receiving
 export async function getNewAddress(userId: string) {
@@ -156,4 +143,81 @@ export async function getBlockCount(userId: string) {
 
 export async function getBestBlockHash(userId: string) {
   return runZingo(userId, ["getbestblockhash"]);
+}
+
+// Cipherscan Explorer API interfaces
+export interface CipherscanTransaction {
+  txid: string;
+  blockHeight: number;
+  blockTime: string;
+  size: number;
+  txIndex: number;
+  hasSapling: boolean;
+  hasOrchard: boolean;
+  hasIronwood: boolean;
+  inputValue: number;
+  outputValue: number;
+  netChange: number;
+  counterparty: string | null;
+  senderCount: number;
+  recipientCount: number;
+}
+
+export interface CipherscanPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface CipherscanAddressInfo {
+  address: string;
+  balance: number;
+  totalReceived: number;
+  totalSent: number;
+  txCount: number;
+  firstSeen: string;
+  lastSeen: string;
+  transactions: CipherscanTransaction[];
+  pagination: CipherscanPagination;
+}
+
+// Get address information from Cipherscan explorer API
+export async function getExplorerAddress(
+  address: string,
+  page: number = 1,
+  limit: number = 25
+): Promise<CipherscanAddressInfo> {
+  const url = `https://api.testnet.cipherscan.app/api/address/${address}?page=${page}&limit=${limit}`;
+  
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Cipherscan API error: ${response.status} ${response.statusText}`);
+  }
+  
+  return response.json();
+}
+
+// Get balance from Cipherscan explorer API
+export async function getExplorerBalance(address: string): Promise<number> {
+  const data = await getExplorerAddress(address, 1, 1);
+  return data.balance;
+}
+
+// Get transactions from Cipherscan explorer API
+export async function getExplorerTransactions(
+  address: string,
+  page: number = 1,
+  limit: number = 25
+): Promise<CipherscanTransaction[]> {
+  const data = await getExplorerAddress(address, page, limit);
+  return data.transactions;
+}
+
+// Get transaction count from Cipherscan explorer API
+export async function getExplorerTxCount(address: string): Promise<number> {
+  const data = await getExplorerAddress(address, 1, 1);
+  return data.txCount;
 }
