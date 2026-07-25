@@ -7,12 +7,6 @@ import { Send, ArrowDownLeft, Heart, Link as LinkIcon } from 'lucide-react';
 export function QuickActions() {
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <Link href="/send">
-        <Button className="w-full" size="lg">
-          <Send className="mr-2 h-4 w-4" />
-          Send Tip
-        </Button>
-      </Link>
       <Link href="/send-zec">
         <Button variant="outline" className="w-full" size="lg">
           <Send className="mr-2 h-4 w-4" />
