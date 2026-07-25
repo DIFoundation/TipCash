@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
     const formattedResults = results.map((user) => ({
       id: user.id,
       username: user.username,
-      displayName: user.displayName,
+      displayName: user.display_name,
       bio: user.bio,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatar_url,
     }));
 
     return NextResponse.json({

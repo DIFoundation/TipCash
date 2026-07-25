@@ -31,15 +31,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const balance = await getBalance(user.zcashAddress);
+    const balance = await getBalance(user.id);
 
     return NextResponse.json({
-      address: user.zcashAddress,
+      address: user.zcash_address,
       balance,
       currency: 'ZEC',
     });
   } catch (error) {
-    console.error('[v0] Get balance error:', error);
+    console.error('Get balance error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch balance' },
       { status: 500 }

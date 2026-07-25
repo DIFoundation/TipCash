@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
       id: user.id,
       email: user.email,
       username: user.username,
-      displayName: user.displayName,
+      displayName: user.display_name,
       bio: user.bio,
-      avatarUrl: user.avatarUrl,
-      zcashAddress: user.zcashAddress,
-      createdAt: user.createdAt,
+      avatarUrl: user.avatar_url,
+      zcashAddress: user.zcash_address,
+      createdAt: user.created_at,
     });
   } catch (error) {
     console.error('[v0] Get profile error:', error);
@@ -84,20 +84,20 @@ export async function PATCH(request: NextRequest) {
     // Update user
     const updatedUser = await db.users.update(payload.userId, {
       ...validationResult.data,
-      updatedAt: new Date(),
+      updated_at: new Date(),
     });
 
     return NextResponse.json({
       id: updatedUser.id,
       email: updatedUser.email,
       username: updatedUser.username,
-      displayName: updatedUser.displayName,
+      displayName: updatedUser.display_name,
       bio: updatedUser.bio,
-      avatarUrl: updatedUser.avatarUrl,
-      zcashAddress: updatedUser.zcashAddress,
+      avatarUrl: updatedUser.avatar_url,
+      zcashAddress: updatedUser.zcash_address,
     });
   } catch (error) {
-    console.error('[v0] Update profile error:', error);
+    console.error('Update profile error:', error);
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

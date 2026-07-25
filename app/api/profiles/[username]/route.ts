@@ -27,13 +27,13 @@ export async function GET(
     return NextResponse.json({
       id: user.id,
       username: user.username,
-      displayName: user.displayName,
+      displayName: user.display_name,
       bio: user.bio,
-      avatarUrl: user.avatarUrl,
-      createdAt: user.createdAt,
+      avatarUrl: user.avatar_url,
+      createdAt: user.created_at,
     });
   } catch (error) {
-    console.error('[v0] Get profile error:', error);
+    console.error('Get profile error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
       { status: 500 }

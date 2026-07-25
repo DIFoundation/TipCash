@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { ProtectedRoute } from '@/components/protected-route';
 import { DashboardHeader } from '@/components/dashboard-header';
@@ -9,16 +10,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
-  const { user, accessToken, updateUser } = useAuth();
+  const { user, accessToken, updateUser, logout } = useAuth();
+  const router = useRouter();
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setDisplayName(user.displayName || '');
+      setDisplayName(user.display_name || '');
       setBio(user.bio || '');
     }
   }, [user]);
@@ -39,7 +43,7 @@ export default function SettingsPage() {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          displayName,
+          display_name: displayName,
           bio: bio || undefined,
         }),
       });
@@ -57,6 +61,42 @@ export default function SettingsPage() {
       setLoading(false);
     }
   };
+
+  const formatAddress = (addr: string) => {
+    if (!addr) return '';
+    return addr.substring(0, 10) + '...' + addr.substring(addr.length - 4);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!accessToken) return;
+
+    setError('');
+    setDeleteLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+
+      // Logout and redirect to home
+      logout();
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete account');
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
 
   return (
     <ProtectedRoute>
@@ -129,9 +169,11 @@ export default function SettingsPage() {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder={user?.displayName || ''}
                     disabled={loading}
                   />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Current display name: {user?.display_name}
+                  </p>
                 </div>
 
                 <div>
@@ -173,9 +215,52 @@ export default function SettingsPage() {
                 <div>
                   <p className="text-muted-foreground">Account Created</p>
                   <p className="text-foreground mt-1">
-                    {(user?.created_at as Date)?.toLocaleDateString() || 'Unknown'}
+                    {(user?.created_at) || 'Unknown'}
                   </p>
                 </div>
+              </div>
+            </Card>
+
+            {/* Danger Zone */}
+            <Card className="p-6 md:p-8 border-red-200">
+              <h2 className="text-xl font-semibold text-red-600 mb-6">Danger Zone</h2>
+              
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+                
+                {!showDeleteConfirm ? (
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={deleteLoading}
+                  >
+                    Delete Account
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-red-600">
+                      Are you sure you want to delete your account? This action cannot be undone.
+                    </p>
+                    <div className="flex gap-3">
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={deleteLoading}
+                      >
+                        {deleteLoading ? 'Deleting...' : 'Yes, Delete Account'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        disabled={deleteLoading}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>

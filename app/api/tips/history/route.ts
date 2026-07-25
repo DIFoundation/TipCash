@@ -27,22 +27,22 @@ export async function GET(request: NextRequest) {
     const received = await db.tips.findByRecipientId(payload.userId, 50);
 
     // Combine and sort by date
-    const all = [...sent, ...received].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const all = [...sent, ...received].sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
 
     // Format response
     const formattedTips = all.map((tip) => ({
       id: tip.id,
       txid: tip.txid,
-      senderId: tip.senderId,
-      recipientId: tip.recipientId,
-      recipientAddress: tip.recipientAddress,
+      senderId: tip.sender_id,
+      recipientId: tip.recipient_id,
+      recipientAddress: tip.recipient_address,
       amount: tip.amount,
       currency: tip.currency,
       status: tip.status,
       memo: tip.memo,
-      isAnonymous: tip.isAnonymous,
-      direction: tip.senderId === payload.userId ? 'sent' : 'received',
-      createdAt: tip.createdAt,
+      isAnonymous: tip.is_anonymous,
+      direction: tip.sender_id === payload.userId ? 'sent' : 'received',
+      createdAt: tip.created_at,
     }));
 
     return NextResponse.json({

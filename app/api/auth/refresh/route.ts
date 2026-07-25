@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ accessToken: newAccessToken });
   } catch (error) {
-    console.error('[v0] Refresh token error:', error);
+    console.error('Refresh token error:', error);
     return NextResponse.json(
       { error: 'Failed to refresh token' },
       { status: 500 }

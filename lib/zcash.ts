@@ -1,60 +1,5 @@
 import { runZingo } from "@/lib/zingo";
 
-interface RpcResponse<T> {
-  result: T;
-  error: { code: number; message: string } | null;
-  id: number | string;
-}
-
-// export async function runZingo<T>(
-//   method: string,
-//   params: unknown[] = []
-// ): Promise<T> {
-//   const provider = process.env.ZCASH_PROVIDER ?? "zallet";
-
-//   let url: string;
-//   const headers: HeadersInit = {
-//     "Content-Type": "application/json",
-//   };
-
-//   if (provider === "tatum") {
-//     url = process.env.TATUM_RPC_URL!;
-
-//     headers["x-api-key"] = process.env.TATUM_API_KEY!;
-//   } else {
-//     url = process.env.ZCASH_RPC_URL!;
-
-//     headers["Authorization"] =
-//       "Basic " +
-//       Buffer.from(
-//         `${process.env.ZCASH_RPC_USER}:${process.env.ZCASH_RPC_PASSWORD}`
-//       ).toString("base64");
-//   }
-
-//   const response = await fetch(url, {
-//     method: "POST",
-//     headers,
-//     body: JSON.stringify({
-//       jsonrpc: "2.0",
-//       id: 1,
-//       method,
-//       params,
-//     }),
-//   });
-
-//   if (!response.ok) {
-//     throw new Error(`RPC ${response.status}`);
-//   }
-
-//   const json: RpcResponse<T> = await response.json();
-
-//   if (json.error) {
-//     throw new Error(json.error.message);
-//   }
-
-//   return json.result;
-// }
-
 export interface ZcashBalance {
   transparent: number;
   private: number;
@@ -62,22 +7,38 @@ export interface ZcashBalance {
 }
 
 // Get balance for a Zcash address
-export async function getBalance() {
-  const output = await runZingo("balance");
+export async function getBalance(userId: string): Promise<ZcashBalance> {
+  const output = await runZingo(userId, ["balance"]);
 
-  return output;
+  // Parse the balance output
+  const lines = output.split('\n').filter(line => line.trim());
+  const balances: Record<string, number> = {};
+
+  lines.forEach(line => {
+    const match = line.match(/(\w+)_balance:\s*(\d+)/);
+    if (match) {
+      const key = match[1];
+      const value = parseInt(match[2], 10);
+      balances[key] = value;
+    }
+  });
+
+  // Calculate totals based on Zcash pool types
+  // Transparent: Ironwood + Transparent pools
+  const transparent = (balances.total_ironwood_balance || 0) + (balances.total_transparent_balance || 0);
+  
+  // Private: Orchard + Sapling pools
+  const privateBalance = (balances.total_orchard_balance || 0) + (balances.total_sapling_balance || 0);
+  
+  // Total: all pools combined
+  const total = transparent + privateBalance;
+
+  return {
+    transparent,
+    private: privateBalance,
+    total
+  };
 }
-
-// Get wallet balance (all addresses)
-// export async function getWalletBalance(): Promise<ZcashBalance> {
-//   const total = await getBalance();
-
-//   return {
-//     transparent: total,
-//     private: 0,
-//     total,
-//   };
-// }
 
 // Send ZEC transaction
 export interface SendParams {
@@ -96,7 +57,7 @@ export async function sendTransaction(params: SendParams) {
     },
   ];
 
-  return runZingo("z_sendmany", params.from, JSON.stringify(outputs), "1");
+  return runZingo(params.from, ["z_sendmany", JSON.stringify(outputs), "1"]);
 }
 
 // Get transaction details
@@ -110,13 +71,13 @@ export interface TransactionDetail {
   memo?: string;
 }
 
-export async function getTransaction(txid: string) {
-  return runZingo("gettransaction", txid);
+export async function getTransaction(userId: string, txid: string) {
+  return runZingo(userId, ["gettransaction", txid]);
 }
 
 // List recent transactions
-export async function listTransactions() {
-  const output = await runZingo("transactions");
+export async function listTransactions(userId: string) {
+  const output = await runZingo(userId, ["transactions"]);
 
   return output;
 }
@@ -131,20 +92,29 @@ export interface AddressValidation {
   type?: string;
 }
 
-export async function validateAddress(address: string) {
-  return runZingo("validateaddress", address);
+export async function validateAddress(userId: string, address: string): Promise<AddressValidation> {
+  const output = await runZingo(userId, ["validateaddress", address]);
+  return JSON.parse(output as string);
 }
 
 // Get a new address for receiving
-export async function getNewAddress() {
-  const output = await runZingo("new_address", "oz");
+export async function getNewAddress(userId: string) {
+  const output = await runZingo(userId, ["new_address", "oz"]);
 
-  return output;
+  // Extract JSON from output (Zingo CLI outputs status messages before JSON)
+  const jsonMatch = output.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('No JSON found in Zingo CLI output');
+  }
+
+  // Parse the JSON response and extract the encoded address
+  const addressData = JSON.parse(jsonMatch[0]);
+  return addressData.encoded_address;
 }
 
 // Get list of addresses owned by wallet
-export async function listAddresses() {
-  const output = await runZingo("addresses");
+export async function listAddresses(userId: string) {
+  const output = await runZingo(userId, ["addresses"]);
 
   return JSON.parse(output as string);
 }
@@ -176,14 +146,14 @@ export async function convertUsdToZec(usdAmount: number): Promise<number> {
   return usdAmount / price;
 }
 
-export async function getBlockchainInfo() {
-  return runZingo("getblockchaininfo");
+export async function getBlockchainInfo(userId: string) {
+  return runZingo(userId, ["getblockchaininfo"]);
 }
 
-export async function getBlockCount() {
-  return runZingo("getblockcount");
+export async function getBlockCount(userId: string) {
+  return runZingo(userId, ["getblockcount"]);
 }
 
-export async function getBestBlockHash() {
-  return runZingo("getbestblockhash");
+export async function getBestBlockHash(userId: string) {
+  return runZingo(userId, ["getbestblockhash"]);
 }

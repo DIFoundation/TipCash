@@ -17,12 +17,18 @@ export function DashboardHeader() {
     router.push('/');
   };
 
+  const CHAIN = process.env.CHAIN;
+  
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="text-2xl font-bold text-foreground">
-          TipCash
-        </Link>
+        <div className="flex items-start gap-2">
+          <Link href="/dashboard" className="text-2xl font-bold text-foreground">
+            TipCash
+          </Link>
+            <span className="bg-gray-500 text-white px-1 py-1 rounded text-xs">{CHAIN}</span>
+        </div>
+        {/* network badge */}
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
@@ -46,7 +52,7 @@ export function DashboardHeader() {
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-sm font-medium text-foreground">{user?.displayName}</p>
+              <p className="text-sm font-medium text-foreground">{user?.display_name}</p>
               <p className="text-xs text-muted-foreground">@{user?.username}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">

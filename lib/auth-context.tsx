@@ -6,11 +6,11 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  displayName: string;
+  display_name: string;
   bio?: string;
   avatarUrl?: string;
   zcash_address: string;
-  created_at: Date;
+  created_at: string;
 }
 
 interface AuthContextType {

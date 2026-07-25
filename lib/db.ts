@@ -99,6 +99,14 @@ export const db = {
       if (error) throw error;
       return user;
     },
+    delete: async (id: string): Promise<boolean> => {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return true;
+    },
     search: async (query: string, limit: number = 20, offset: number = 0): Promise<User[]> => {
       const { data, error } = await supabase
         .from('users')

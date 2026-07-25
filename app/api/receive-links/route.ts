@@ -59,18 +59,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { isAnonymous = false, usesRemaining = 1, expiresAt } = body;
+    const { is_anonymous = false, usesRemaining = 1, expiresAt } = body;
 
     const token_generated = uuidv4();
 
     const link = await db.receiveLinks.create({
       id: uuidv4(),
-      userId: payload.userId,
+      user_id: payload.userId,
       token: token_generated,
-      isAnonymous,
-      usesRemaining,
-      expiresAt: expiresAt ? new Date(expiresAt) : undefined,
-      createdAt: new Date(),
+      is_anonymous,
+      uses_remaining: usesRemaining,
+      expires_at: expiresAt ? new Date(expiresAt) : undefined,
+      created_at: new Date(),
     });
 
     return NextResponse.json({

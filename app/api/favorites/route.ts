@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       count: favorites.length,
     });
   } catch (error) {
-    console.error('[v0] Get favorites error:', error);
+    console.error('Get favorites error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch favorites' },
       { status: 500 }

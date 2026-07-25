@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate recipient address
-    const recipientValid = await validateAddress(toAddress);
+    const recipientValid = await validateAddress(sender.id, toAddress);
     if (!recipientValid.isvalid) {
       return NextResponse.json(
         { error: 'Invalid recipient address' },
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Send transaction
     const txid = await sendTransaction({
-      from: sender.zcashAddress,
+      from: sender.zcash_address,
       to: toAddress,
       amount,
       memo,
@@ -73,19 +73,19 @@ export async function POST(request: NextRequest) {
     // Create tip record
     const tip = await db.tips.create({
       id: uuidv4(),
-      senderId: payload.userId,
-      recipientAddress: toAddress,
+      sender_id: payload.userId,
+      recipient_address: toAddress,
       amount,
       currency: 'ZEC',
       txid,
       status: 'pending',
       memo,
-      isAnonymous: false,
-      createdAt: new Date(),
+      is_anonymous: false,
+      created_at: new Date(),
     });
 
     return NextResponse.json({
-      tipId: tip.id,
+      tip_id: tip.id,
       txid,
       amount,
       address: toAddress,

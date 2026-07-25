@@ -41,11 +41,13 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await hashPassword(password);
 
+    // Generate user ID
+    const userId = uuidv4();
+
     // Generate new Zcash address
-    const zcashAddress = await getNewAddress();
+    const zcashAddress = await getNewAddress(userId);
 
     // Create user
-    const userId = uuidv4();
     const user = await db.users.create({
       id: userId,
       email,

@@ -48,7 +48,7 @@ export async function POST(
       success: true,
     }, { status: 201 });
   } catch (error) {
-    console.error('[v0] Add favorite error:', error);
+    console.error('Add favorite error:', error);
     return NextResponse.json(
       { error: 'Failed to add favorite' },
       { status: 500 }
@@ -94,7 +94,7 @@ export async function DELETE(
       success,
     });
   } catch (error) {
-    console.error('[v0] Remove favorite error:', error);
+    console.error('Remove favorite error:', error);
     return NextResponse.json(
       { error: 'Failed to remove favorite' },
       { status: 500 }
