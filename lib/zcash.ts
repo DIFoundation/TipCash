@@ -99,7 +99,7 @@ export async function validateAddress(userId: string, address: string): Promise<
 
 // Get a new address for receiving
 export async function getNewAddress(userId: string) {
-  const output = await runZingo(userId, ["new_address", "oz"]);
+  const output = await runZingo(userId, ["new_taddress_allow_gap"]);
 
   // Extract JSON from output (Zingo CLI outputs status messages before JSON)
   const jsonMatch = output.match(/\{[\s\S]*\}/);
